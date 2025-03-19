@@ -169,7 +169,9 @@ async def async_make_snapshot(
 
 
 async def get_echarts(url: str, snapshot_js: str):
-    browser = await launch()
+    args = os.environ.get('CHROME_EXTRA_ARGS', '')
+    args = args.split(' ')
+    browser = await launch(args=args)
     page = await browser.newPage()
     await page.goto(url)
 
