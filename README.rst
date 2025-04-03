@@ -86,7 +86,7 @@ Usage details
 
 Command line options::
 
-   $ snapshot output.html [png|jpeg|gif|svg|pdf] [delay] [pixel ratio]
+   $ snapshot output.html [png|jpeg|gif|svg|pdf] [delay] [pixel ratio] [output_json_file]
 
 where:
 
@@ -95,6 +95,7 @@ some time measured in seconds. It is needed only when your snapshot is partial b
 animation takes long than 1.5 second(default).
 `pixel ratio` tells pyecharts-snapshot to use a different pixel ratio when generate
 the image. It defaults to 2.
+`output_json_file` optionally saves the echarts configuration as a JSON file to the specified path.
 
 
 Programmatical usage is simple:
@@ -103,8 +104,17 @@ Programmatical usage is simple:
 
    ...
    somechart.render(path='cool_snapshot.png')  # delay=1, pixel_ratio=3) 1 second delay, 3 as pixel ratio
+   
+   # Or with JSON config output:
+   from pyecharts_snapshot.main import make_a_snapshot
+   import asyncio
+   
+   asyncio.get_event_loop().run_until_complete(
+       make_a_snapshot('chart.html', 'chart.png', output_json_file='chart_config.json')
+   )
 
-where delay as an optional parameter can be given to specify `delay_in_seconds`.
+where delay as an optional parameter can be given to specify `delay_in_seconds`, and output_json_file
+can be used to save the chart configuration as JSON.
 
 Coffee
 ================================================================================

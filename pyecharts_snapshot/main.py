@@ -30,11 +30,12 @@ SUPPORTED_IMAGE_FORMATS = [
 ]
 
 HELP_TEXT = """
-Usage:   snapshot input file [%s] [delay] [pixel ratio]
+Usage:   snapshot input file [%s] [delay] [pixel ratio] [output_json_file]
          snapshot help: display this help message
 Parameters:
          delay: float value, unit in seconds and defaults 1.5 seconds
          pixel ratio: integer value, defaults to 2
+         output_json_file: optional file path to save echarts options as JSON
          document online:github.com/pyecharts/pyecharts-snapshot
 """.format(
     "|".join(SUPPORTED_IMAGE_FORMATS)
@@ -80,13 +81,29 @@ async () => {
 }
 """
 
+CONFIG_JS = """
+async () => {
+    const getEchartsConfig = () => {
+        var ele = document.querySelector('div[_echarts_instance_]');
+        var mychart = echarts.getInstanceByDom(ele);
+        return JSON.stringify(mychart.getOption());
+    }
+    const delayedFunction = () => {
+        return new Promise(function(resolve, reject){
+            window.setTimeout(() => resolve(getEchartsConfig()), %d);
+        });
+    }
+    return await delayedFunction();
+}
+"""
+
 
 def main():
     asyncio.get_event_loop().run_until_complete(_main())
 
 
 async def _main():
-    if len(sys.argv) < 2 or len(sys.argv) > 5:
+    if len(sys.argv) < 2 or len(sys.argv) > 6:
         show_help()
     file_name = sys.argv[1]
     if file_name == "help":
@@ -94,6 +111,8 @@ async def _main():
     delay = DEFAULT_DELAY
     output = DEFAULT_OUTPUT_NAME % PNG_FORMAT
     pixel_ratio = DEFAULT_PIXEL_RATIO
+    output_json_file = None
+    
     if len(sys.argv) >= 3:
         file_type = sys.argv[2]
         if file_type in SUPPORTED_IMAGE_FORMATS:
@@ -102,10 +121,14 @@ async def _main():
             raise TypeError(NOT_SUPPORTED_FILE_TYPE % file_type)
         if len(sys.argv) >= 4:
             delay = float(sys.argv[3])  # in seconds
-            if len(sys.argv) == 5:
+            if len(sys.argv) >= 5:
                 pixel_ratio = sys.argv[4]
+                if len(sys.argv) == 6:
+                    output_json_file = sys.argv[5]
+    
     await make_a_snapshot(
-        file_name, output, delay=delay, pixel_ratio=pixel_ratio
+        file_name, output, delay=delay, pixel_ratio=pixel_ratio, 
+        output_json_file=output_json_file
     )
 
 
@@ -120,6 +143,7 @@ async def make_a_snapshot(
     delay: float = DEFAULT_DELAY,
     pixel_ratio: int = DEFAULT_PIXEL_RATIO,
     verbose: bool = True,
+    output_json_file: str = None,
 ):
     logger.VERBOSE = verbose
     logger.info(MESSAGE_GENERATING)
@@ -128,6 +152,15 @@ async def make_a_snapshot(
     content = await async_make_snapshot(
         file_name, file_type, pixel_ratio, delay
     )
+
+    if output_json_file:
+        config = await get_chart_config(file_name, delay)
+        save_as_text(config, output_json_file)
+        if "/" not in output_json_file:
+            json_output_path = os.path.join(os.getcwd(), output_json_file)
+        else:
+            json_output_path = output_json_file
+        logger.info(MESSAGE_FILE_SAVED_AS % json_output_path)
 
     if file_type in [SVG_FORMAT, B64_FORMAT]:
         save_as_text(content, output_name)
@@ -178,6 +211,13 @@ async def get_echarts(url: str, snapshot_js: str):
     content = await page.evaluate(snapshot_js)
     await browser.close()
     return content
+
+
+async def get_chart_config(html_path: str, delay: float = DEFAULT_DELAY):
+    """Get the echarts configuration as JSON"""
+    __actual_delay_in_ms = int(delay * 1000)
+    config_js = CONFIG_JS % __actual_delay_in_ms
+    return await get_echarts(to_file_uri(html_path), config_js)
 
 
 def decode_base64(data: str) -> bytes:

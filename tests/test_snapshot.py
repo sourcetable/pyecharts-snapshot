@@ -2,10 +2,12 @@ import os
 import sys
 import codecs
 import filecmp
+import json
 from asyncio import coroutine
 
 from pyecharts_snapshot.main import (
     SNAPSHOT_JS,
+    CONFIG_JS,
     main,
     to_file_uri,
     save_as_text,
@@ -99,6 +101,29 @@ class TestMain:
         except Exception:
             expected = SNAPSHOT_JS % ("jpeg", pixel_ratio, 100)
             eq_(self.fake_popen.call_args[0][1], expected)
+            
+    def test_output_json_file_option(self):
+        def CoroMock():
+            coro = Mock()
+            coro.side_effect = [
+                get_base64_image(),  # For the image
+                '{"series":[{"data":[1,2,3]}]}',  # For the JSON config
+            ]
+            corofunc = Mock(name="CoroutineFunction", side_effect=coroutine(coro))
+            corofunc.coro = coro
+            return corofunc
+            
+        with patch("pyecharts_snapshot.main.get_echarts", new_callable=CoroMock):
+            json_output = "config-cli.json"
+            args = ["snapshot", HTML_FILE, "jpeg", "0.1", "2", json_output]
+            with patch.object(sys, "argv", args):
+                main()
+                
+            assert os.path.exists(json_output)
+            with open(json_output, 'r') as f:
+                config = json.load(f)
+                assert 'series' in config
+            os.unlink(json_output)  # Clean up
 
     def test_windows_file_name(self):
         self.fake_popen.side_effect = Exception("Enough test. Abort")
@@ -241,6 +266,32 @@ def test_to_file_uri():
     uri2 = to_file_uri(linux_file)
     assert uri2.startswith("file:///")
     assert uri2.endswith(linux_file)
+
+
+@async_test
+async def test_output_json_file():
+    def CoroMock():
+        coro = Mock()
+        coro.side_effect = [
+            get_base64_image(),  # For the image
+            '{"series":[{"data":[1,2,3]}]}',  # For the JSON config
+        ]
+        corofunc = Mock(name="CoroutineFunction", side_effect=coroutine(coro))
+        corofunc.coro = coro
+        return corofunc
+
+    with patch("pyecharts_snapshot.main.get_echarts", new_callable=CoroMock):
+        test_output = "custom.png"
+        json_output = "config.json"
+        await make_a_snapshot(
+            get_fixture("render.html"), test_output, output_json_file=json_output
+        )
+        assert filecmp.cmp(test_output, get_fixture("sample.png"))
+        assert os.path.exists(json_output)
+        with open(json_output, 'r') as f:
+            config = json.load(f)
+            assert 'series' in config
+        os.unlink(json_output)  # Clean up
 
 
 def get_base64_image():
