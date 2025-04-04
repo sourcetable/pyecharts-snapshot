@@ -149,18 +149,15 @@ async def make_a_snapshot(
     logger.info(MESSAGE_GENERATING)
     file_type = output_name.split(".")[-1]
 
-    content = await async_make_snapshot(
+    content, config = await async_make_snapshot(
         file_name, file_type, pixel_ratio, delay
     )
 
     if output_json_file:
-        config = await get_chart_config(file_name, delay)
         save_as_text(config, output_json_file)
         if "/" not in output_json_file:
-            json_output_path = os.path.join(os.getcwd(), output_json_file)
-        else:
-            json_output_path = output_json_file
-        logger.info(MESSAGE_FILE_SAVED_AS % json_output_path)
+            output_json_file = os.path.join(os.getcwd(), output_json_file)
+        logger.info(MESSAGE_FILE_SAVED_AS % output_json_file)
 
     if file_type in [SVG_FORMAT, B64_FORMAT]:
         save_as_text(content, output_name)
@@ -198,7 +195,9 @@ async def async_make_snapshot(
             __actual_delay_in_ms,
         )
 
-    return await get_echarts(to_file_uri(html_path), snapshot_js)
+    config_js = CONFIG_JS % __actual_delay_in_ms
+
+    return await get_echarts_with_config(to_file_uri(html_path), snapshot_js, config_js)
 
 
 async def get_echarts(url: str, snapshot_js: str):
@@ -213,11 +212,22 @@ async def get_echarts(url: str, snapshot_js: str):
     return content
 
 
-async def get_chart_config(html_path: str, delay: float = DEFAULT_DELAY):
-    """Get the echarts configuration as JSON"""
-    __actual_delay_in_ms = int(delay * 1000)
-    config_js = CONFIG_JS % __actual_delay_in_ms
-    return await get_echarts(to_file_uri(html_path), config_js)
+async def get_echarts_with_config(url: str, snapshot_js: str, config_js: str):
+    """Get both the snapshot and config in a single browser session"""
+    args = os.environ.get('CHROME_EXTRA_ARGS', '')
+    args = args.split(' ')
+    browser = await launch(args=args)
+    page = await browser.newPage()
+    await page.goto(url)
+
+    # Get the snapshot first
+    content = await page.evaluate(snapshot_js)
+
+    # Then get the config
+    config = await page.evaluate(config_js)
+
+    await browser.close()
+    return content, config
 
 
 def decode_base64(data: str) -> bytes:
