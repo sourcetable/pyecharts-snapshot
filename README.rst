@@ -104,17 +104,8 @@ Programmatical usage is simple:
 
    ...
    somechart.render(path='cool_snapshot.png')  # delay=1, pixel_ratio=3) 1 second delay, 3 as pixel ratio
-   
-   # Or with JSON config output:
-   from pyecharts_snapshot.main import make_a_snapshot
-   import asyncio
-   
-   asyncio.get_event_loop().run_until_complete(
-       make_a_snapshot('chart.html', 'chart.png', output_json_file='chart_config.json')
-   )
 
-where delay as an optional parameter can be given to specify `delay_in_seconds`, and output_json_file
-can be used to save the chart configuration as JSON.
+where delay as an optional parameter can be given to specify `delay_in_seconds`.
 
 Coffee
 ================================================================================
