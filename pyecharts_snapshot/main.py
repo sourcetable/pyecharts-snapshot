@@ -197,9 +197,9 @@ async def async_make_snapshot(
 
     config_js = CONFIG_JS % __actual_delay_in_ms
 
-    return await get_echarts_with_config(to_file_uri(html_path), snapshot_js, config_js)
+    return await get_echarts(to_file_uri(html_path), snapshot_js, config_js)
 
-async def get_echarts_with_config(url: str, snapshot_js: str, config_js: str):
+async def get_echarts(url: str, snapshot_js: str, config_js: str = None):
     """Get both the snapshot and config in a single browser session"""
     args = os.environ.get('CHROME_EXTRA_ARGS', '')
     args = args.split(' ')
@@ -211,10 +211,11 @@ async def get_echarts_with_config(url: str, snapshot_js: str, config_js: str):
     content = await page.evaluate(snapshot_js)
 
     # Then get the config
-    config = await page.evaluate(config_js)
+    config = await page.evaluate(config_js) if config_js else None
 
     await browser.close()
-    return content, config
+
+    return (content, config) if config else content
 
 
 def decode_base64(data: str) -> bytes:
