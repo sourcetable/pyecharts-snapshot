@@ -112,7 +112,7 @@ async def _main():
     output = DEFAULT_OUTPUT_NAME % PNG_FORMAT
     pixel_ratio = DEFAULT_PIXEL_RATIO
     output_json_file = None
-    
+
     if len(sys.argv) >= 3:
         file_type = sys.argv[2]
         if file_type in SUPPORTED_IMAGE_FORMATS:
@@ -125,9 +125,9 @@ async def _main():
                 pixel_ratio = sys.argv[4]
                 if len(sys.argv) == 6:
                     output_json_file = sys.argv[5]
-    
+
     await make_a_snapshot(
-        file_name, output, delay=delay, pixel_ratio=pixel_ratio, 
+        file_name, output, delay=delay, pixel_ratio=pixel_ratio,
         output_json_file=output_json_file
     )
 

@@ -101,7 +101,7 @@ class TestMain:
         except Exception:
             expected = SNAPSHOT_JS % ("jpeg", pixel_ratio, 100)
             eq_(self.fake_popen.call_args[0][1], expected)
-            
+
     def test_output_json_file_option(self):
         def CoroMock():
             coro = Mock()
@@ -112,13 +112,13 @@ class TestMain:
             corofunc = Mock(name="CoroutineFunction", side_effect=coroutine(coro))
             corofunc.coro = coro
             return corofunc
-            
+
         with patch("pyecharts_snapshot.main.get_echarts", new_callable=CoroMock):
             json_output = "config-cli.json"
             args = ["snapshot", HTML_FILE, "jpeg", "0.1", "2", json_output]
             with patch.object(sys, "argv", args):
                 main()
-                
+
             assert os.path.exists(json_output)
             with open(json_output, 'r') as f:
                 config = json.load(f)
