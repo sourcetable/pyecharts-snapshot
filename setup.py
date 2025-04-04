@@ -29,7 +29,7 @@ except (ValueError, UnicodeError, locale.Error):
 
 NAME = "pyecharts-snapshot"
 AUTHOR = "pyecharts dev team"
-VERSION = "0.2.0"
+VERSION = "0.3.0"
 EMAIL = "info@pyecharts.com"
 LICENSE = "MIT"
 ENTRY_POINTS = {
