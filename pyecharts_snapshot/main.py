@@ -199,19 +199,6 @@ async def async_make_snapshot(
 
     return await get_echarts_with_config(to_file_uri(html_path), snapshot_js, config_js)
 
-
-async def get_echarts(url: str, snapshot_js: str):
-    args = os.environ.get('CHROME_EXTRA_ARGS', '')
-    args = args.split(' ')
-    browser = await launch(args=args)
-    page = await browser.newPage()
-    await page.goto(url)
-
-    content = await page.evaluate(snapshot_js)
-    await browser.close()
-    return content
-
-
 async def get_echarts_with_config(url: str, snapshot_js: str, config_js: str):
     """Get both the snapshot and config in a single browser session"""
     args = os.environ.get('CHROME_EXTRA_ARGS', '')
