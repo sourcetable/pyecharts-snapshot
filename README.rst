@@ -86,7 +86,7 @@ Usage details
 
 Command line options::
 
-   $ snapshot output.html [png|jpeg|gif|svg|pdf] [delay] [pixel ratio]
+   $ snapshot output.html [png|jpeg|gif|svg|pdf] [delay] [pixel ratio] [output_json_file]
 
 where:
 
@@ -95,6 +95,7 @@ some time measured in seconds. It is needed only when your snapshot is partial b
 animation takes long than 1.5 second(default).
 `pixel ratio` tells pyecharts-snapshot to use a different pixel ratio when generate
 the image. It defaults to 2.
+`output_json_file` optionally saves the echarts configuration as a JSON file to the specified path.
 
 
 Programmatical usage is simple:
