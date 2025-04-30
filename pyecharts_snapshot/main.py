@@ -210,7 +210,8 @@ async def get_echarts(url: str, snapshot_js: str, config_js: str = None):
     ), args=args)
 
     page = await browser.newPage()
-    await page.goto(url)
+    # Set the timeout in async await instead
+    await page.goto(url, dict(timeout=0))
 
     # Get the snapshot first
     content = await page.evaluate(snapshot_js)
