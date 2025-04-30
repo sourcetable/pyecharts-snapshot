@@ -203,7 +203,12 @@ async def get_echarts(url: str, snapshot_js: str, config_js: str = None):
     """Get both the snapshot and config in a single browser session"""
     args = os.environ.get('CHROME_EXTRA_ARGS', '')
     args = args.split(' ')
-    browser = await launch(args=args)
+
+    browser = await launch(options=dict(
+        headless=(os.getenv('PYPPETEER_HEADLESS', 'true').lower() in ('true', 'yes', '1')),
+        executablePath=os.getenv('PYPPETEER_EXECUTABLE_PATH')
+    ), args=args)
+
     page = await browser.newPage()
     await page.goto(url)
 
