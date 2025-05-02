@@ -50,11 +50,15 @@ async () => {
     const getEcharts = () => {
         var ele = document.querySelector('div[_echarts_instance_]');
         var mychart = echarts.getInstanceByDom(ele);
+        // Width and height only works for off-screen canvas
+        // Which this isn't. Therefore force a resize.
+        chart.resize({
+            width: %s,
+            height: %s
+        });
         return mychart.getDataURL({
             type: '%s',
             pixelRatio: %s,
-            width: %s,
-            height: %s,
             excludeComponents: ['toolbox']
         });
     }
@@ -194,25 +198,12 @@ async def async_make_snapshot(
         snapshot_js = SNAPSHOT_SVG_JS % __actual_delay_in_ms
     else:
         snapshot_js = SNAPSHOT_JS % (
-            file_type,
-            pixel_ratio,
             width or '"auto"',
             height or '"auto"',
+            file_type,
+            pixel_ratio,
             __actual_delay_in_ms,
         )
-        print(SNAPSHOT_JS % (
-            file_type,
-            pixel_ratio,
-            width or '"auto"',
-            height or '"auto"',
-            __actual_delay_in_ms,
-        ), (
-            file_type,
-            pixel_ratio,
-            width or '"auto"',
-            height or '"auto"',
-            __actual_delay_in_ms,
-        ))
 
     config_js = CONFIG_JS % __actual_delay_in_ms
 
