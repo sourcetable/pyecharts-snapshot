@@ -53,6 +53,8 @@ async () => {
         return mychart.getDataURL({
             type: '%s',
             pixelRatio: %s,
+            width: %s,
+            height: %s,
             excludeComponents: ['toolbox']
         });
     }
@@ -142,6 +144,8 @@ async def make_a_snapshot(
     output_name: str,
     delay: float = DEFAULT_DELAY,
     pixel_ratio: int = DEFAULT_PIXEL_RATIO,
+    width: int | None = None,
+    height: int | None = None,
     verbose: bool = True,
     output_json_file: str = None,
 ):
@@ -150,7 +154,7 @@ async def make_a_snapshot(
     file_type = output_name.split(".")[-1]
 
     content, config = await async_make_snapshot(
-        file_name, file_type, pixel_ratio, delay
+        file_name, file_type, pixel_ratio, width, height, delay
     )
 
     if output_json_file:
@@ -182,7 +186,7 @@ async def make_a_snapshot(
 
 
 async def async_make_snapshot(
-    html_path: str, file_type: str, pixel_ratio: int = 2, delay: int = 2
+    html_path: str, file_type: str, pixel_ratio: int, width: int | None, height: int | None, delay: int
 ):
     __actual_delay_in_ms = int(delay * 1000)
 
@@ -192,8 +196,23 @@ async def async_make_snapshot(
         snapshot_js = SNAPSHOT_JS % (
             file_type,
             pixel_ratio,
+            width or '"auto"',
+            height or '"auto"',
             __actual_delay_in_ms,
         )
+        print(SNAPSHOT_JS % (
+            file_type,
+            pixel_ratio,
+            width or '"auto"',
+            height or '"auto"',
+            __actual_delay_in_ms,
+        ), (
+            file_type,
+            pixel_ratio,
+            width or '"auto"',
+            height or '"auto"',
+            __actual_delay_in_ms,
+        ))
 
     config_js = CONFIG_JS % __actual_delay_in_ms
 
