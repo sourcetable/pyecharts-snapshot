@@ -206,7 +206,8 @@ async def get_echarts(url: str, snapshot_js: str, config_js: str = None):
 
     browser = await launch(options=dict(
         headless=(os.getenv('PYPPETEER_HEADLESS', 'true').lower() in ('true', 'yes', '1')),
-        executablePath=os.getenv('PYPPETEER_EXECUTABLE_PATH')
+        executablePath=os.getenv('PYPPETEER_EXECUTABLE_PATH'),
+        defaultViewport=dict(width=800, height=400)
     ), args=args)
 
     page = await browser.newPage()
