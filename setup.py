@@ -75,7 +75,7 @@ CLASSIFIERS = [
 
 INSTALL_REQUIRES = [
     "pillow",
-    "pyppeteer>=0.0.25",
+    "pyppeteer>=2.0.0",
 ]
 SETUP_COMMANDS = {}
 
