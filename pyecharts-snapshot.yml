@@ -11,7 +11,7 @@ min_python_version: "3.5"
 lint_command: make lint
 dependencies:
   - pillow
-  - pyppeteer>=0.0.25
+  - pyppeteer>=2.0.0
 test_dependencies:
   - aiounittest
   - pyecharts
